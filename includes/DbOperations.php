@@ -46,6 +46,21 @@ class DbOperations{
 
     }
 
+    public function getAllUsers(){
+        $stmt = $this->con->prepare("select email,password from users");
+        $stmt->execute();
+        $stmt->bind_result($email,$password);
+
+        $all_users = array();
+
+         while($stmt->fetch()){
+        $user = array();
+        $user['email']=$email;
+        $user['password']=$password;
+        array_push($all_users,$user);
+    }
+    return $all_users;
+    }
     
     public function getUserByEmail($email){
         $stmt = $this->con->prepare("select email,password from users where email = ?");
