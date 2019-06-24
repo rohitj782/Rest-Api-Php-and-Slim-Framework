@@ -61,7 +61,7 @@ class DbOperations{
     }
     return $all_users;
     }
-    
+
     public function getUserByEmail($email){
         $stmt = $this->con->prepare("select email,password from users where email = ?");
         $stmt->bind_param('s',$email);
@@ -82,6 +82,56 @@ class DbOperations{
         return $password;
     }
 
+    function updateUserInfo($email,$password,$new_paassword){
+
+        if($this->isEmailExist($email)){
+         //verify password
+            $hash_password = $this->getUserPasswordByEmail($email);
+            if(password_verify($password,$hash_password)){
+                // USER_AUTHENTICATED;
+                $new_hash_pass = password_hash($new_paassword,PASSWORD_DEFAULT);
+                $stmt = $this->con->prepare("UPDATE users set password = ? WHERE email = ?  ");
+                $stmt->bind_param('ss',$new_hash_pass, $email);
+               if( $stmt->execute()){
+                return INFO_UPDATE_SUCCESS;
+            }else{
+                return INFO_UPDATE_FAIL;
+                }
+
+            }else{
+                return USER_PASS_INCORRECT;
+            }
+
+        }else{
+            return USER_NOT_FOUND;
+        }
+
+    }
+
+    public function deleteUser($email,$password){
+
+        if($this->isEmailExist($email)){
+            $hash_password = $this->getUserPasswordByEmail($email);
+            if(password_verify($password,$hash_password)){
+                //  USER_AUTHENTICATED;
+
+                $stmt = $this->con->prepare("DELETE from users WHERE email = ?");
+                $stmt->bind_param('s',$email);
+                if($stmt->execute()){
+                    return ACCOUNT_DELETED_SUCCESS;
+                }else {
+                    return ACCOUNT_DELETED_FAILURE;
+                }
+
+            }else{
+                return USER_PASS_INCORRECT;
+            }
+
+        }else{
+            return USER_NOT_FOUND;
+        }
+
+    }
 
     function isEmailExist($email){
         $stmt = $this->con->prepare("select * from users where email = ?");

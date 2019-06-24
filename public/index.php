@@ -19,7 +19,7 @@ $app = new \Slim\App([
 
 $app->post('/createuser',function(Request $request, Response $response){
 
-    if(!haveEmptyParam(array('email', 'password'),$response)){   
+    if(!haveEmptyParam(array('email', 'password'),$request,$response)){   
 
        $request_data = $request->getParsedBody(); 
        $email = $request_data['email'];
@@ -80,7 +80,7 @@ $app->post('/createuser',function(Request $request, Response $response){
 
 $app->post('/userlogin',function(Request $request, Response $response){
     
-    if(!haveEmptyParam(array('email','password'),$response)){
+    if(!haveEmptyParam(array('email','password'),$request,$response)){
         $request_data = $request->getParsedBody(); 
         $email = $request_data['email'];
         $password  =$request_data['password'];
@@ -149,12 +149,135 @@ $app->get('/allusers',function(Request $request,Response $response){
 
 });
 
+$app->put('/updateinfo',function(Request $request, Response $response){
 
-function haveEmptyParam($require_param, $response){
+    if(!haveEmptyParam(array('email','password','new_password'),$request,$response)){
+        $request_data = $request->getParsedBody(); 
+        $email = $request_data['email'];
+        $password  =$request_data['password'];
+        $new_password = $request_data['new_password'];
+
+        $response_data =  array();
+        $db = new DbOperations;
+        $result = $db->updateUserInfo($email,$password,$new_password);
+
+            if($result == INFO_UPDATE_SUCCESS){
+                $response_data['error'] = false;
+                $response_data['message'] = 'Info updated successfully';
+                
+                $response->write(json_encode($response_data));
+
+                return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(200);
+
+
+            }else if ($result == INFO_UPDATE_FAIL){
+                $response_data['error'] = true;
+                $response_data['message'] = 'Info updation failed';
+                
+                $response->write(json_encode($response_data));
+
+                return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(422);
+            }else if ($result == USER_PASS_INCORRECT){
+                $response_data['error'] = true;
+                $response_data['message'] = 'Password Incorrect';
+                
+                $response->write(json_encode($response_data));
+
+                return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(422);
+            }else if ($result == USER_NOT_FOUND){
+                $response_data['error'] = true;
+                $response_data['message'] = 'User not found';
+                
+                $response->write(json_encode($response_data));
+
+                return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(422);
+            }
+
+        }
+
+    
+
+    return $response
+    ->withHeader('Content-type','application/json')
+    ->withStatus(422);
+
+});
+
+$app->delete('/deleteuser',function(Request $request, Response $response){
+
+    if(!haveEmptyParam(array('email','password'),$request,$response)){
+        $request_data = $request->getParsedBody();
+         
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+
+        $db = new DbOperations;
+
+        $result = $db->deleteUser($email,$password);
+
+        
+        if($result == ACCOUNT_DELETED_SUCCESS){
+            $response_data['error'] = false;
+            $response_data['message'] = 'User deleted successfully';
+            
+            $response->write(json_encode($response_data));
+
+            return $response
+            ->withHeader('Content-type','application/json')
+            ->withStatus(200);
+
+
+        }else if ($result == ACCOUNT_DELETED_FAILURE){
+            $response_data['error'] = true;
+            $response_data['message'] = 'User detetion failed';
+            
+            $response->write(json_encode($response_data));
+
+            return $response
+            ->withHeader('Content-type','application/json')
+            ->withStatus(422);
+        }else if ($result == USER_PASS_INCORRECT){
+            $response_data['error'] = true;
+            $response_data['message'] = 'Password Incorrect';
+            
+            $response->write(json_encode($response_data));
+
+            return $response
+            ->withHeader('Content-type','application/json')
+            ->withStatus(422);
+        }else if ($result == USER_NOT_FOUND){
+            $response_data['error'] = true;
+            $response_data['message'] = 'User not found';
+            
+            $response->write(json_encode($response_data));
+
+            return $response
+            ->withHeader('Content-type','application/json')
+            ->withStatus(422);
+        }
+
+    }
+
+return $response
+->withHeader('Content-type','application/json')
+->withStatus(422);
+    
+
+});
+
+function haveEmptyParam($require_param,$request, $response){
 
     $error = false;
     $error_param='';
-    $request_param=$_REQUEST;
+    $request_param=$request->getParsedBody();
 
   foreach ($require_param as $param) {
     if(!isset($request_param[$param]) || strlen($request_param[$param])<=0){    
