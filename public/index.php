@@ -12,6 +12,13 @@ $app = new \Slim\App([
     ]
 ]);
 
+// $app->add(new \Slim\Middleware\HttpBasicAuthentication([
+    // "secure" => false // for http connections
+//     "users" => [
+//         "rohitjoshi" => "@koolrj1",
+//     ]
+// ]));
+
 //my api call 
 //end point createuser
 //parameter email, passowrd
@@ -270,7 +277,6 @@ return $response
 ->withHeader('Content-type','application/json')
 ->withStatus(422);
     
-
 });
 
 function haveEmptyParam($require_param,$request, $response){
