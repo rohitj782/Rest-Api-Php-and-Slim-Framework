@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\includes"
+    "\\includes",
+    "\\public"
   ],
-  "SelectedNode": "\\includes\\DbOperations.php",
+  "SelectedNode": "\\public\\index.php",
   "PreviewInSolutionExplorer": false
 }

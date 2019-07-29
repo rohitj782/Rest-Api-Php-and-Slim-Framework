@@ -157,7 +157,7 @@ $app->get('/allusers',function(Request $request,Response $response){
 
 //my api call 
 //end point 'updatepassword'
-//parameter email, password, age
+//parameter email, password, new_password
 //put method is used for updating data into database
 
 $app->put('/updatepassword',function(Request $request, Response $response){
@@ -225,7 +225,7 @@ $app->put('/updatepassword',function(Request $request, Response $response){
 
 //my api call 
 //end point 'deleteuser'
-//parameter email, password, age
+//parameter email, password
 //delete method is used for deleting data into database
 
 $app->delete('/deleteuser',function(Request $request, Response $response){
