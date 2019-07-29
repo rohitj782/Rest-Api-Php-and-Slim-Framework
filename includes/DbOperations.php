@@ -5,28 +5,25 @@ class DbOperations{
     private $con;
 
     function __construct(){
-
         //connect to the database
         require_once dirname(__FILE__) . '/DbConnect.php';
         $dbConnect = new Dbconnect;
         $this->con =  $dbConnect->connect();
-
     }
 
-    function createUser($email, $password){
+    function createUser($email, $password, $age){
 
         if(!$this->isEmailExist($email)){
-            
-        $stmt= $this->con->prepare("Insert into users (email, password) values (?, ?)");
-        $stmt->bind_param('ss',$email,$password);
+		$query="Insert into users (email, password, age) values (?, ?, ?)";
+        $stmt= $this->con->prepare($query);
+        $stmt->bind_param('ssi',$email,$password,$age);
         if($stmt->execute()){
-
             return USER_CREATED;
         }else{
             return USER_FAILURE;
         }
         }else{
-            return USER_EXIXTS;
+            return USER_EXISTS;
         }
     }
 
@@ -47,30 +44,31 @@ class DbOperations{
     }
 
     public function getAllUsers(){
-        $stmt = $this->con->prepare("select email,password from users");
+        $stmt = $this->con->prepare("select email,age from users");
         $stmt->execute();
-        $stmt->bind_result($email,$password);
+        $stmt->bind_result($email,$age);
 
         $all_users = array();
 
          while($stmt->fetch()){
         $user = array();
         $user['email']=$email;
-        $user['password']=$password;
+        $user['age']=$age;
         array_push($all_users,$user);
     }
     return $all_users;
     }
 
+
     public function getUserByEmail($email){
-        $stmt = $this->con->prepare("select email,password from users where email = ?");
+        $stmt = $this->con->prepare("select email,age from users where email = ?");
         $stmt->bind_param('s',$email);
         $stmt->execute();
-        $stmt->bind_result($email,$password);
+        $stmt->bind_result($email,$age);
         $stmt->fetch();
         $user = array();
         $user['email']=$email;
-        $user['password']=$password;
+		$user['age']=$age;
         return $user;
     }
     private function getUserPasswordByEmail($email){

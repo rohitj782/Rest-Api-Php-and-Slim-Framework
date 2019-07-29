@@ -12,30 +12,24 @@ $app = new \Slim\App([
     ]
 ]);
 
-// $app->add(new \Slim\Middleware\HttpBasicAuthentication([
-    // "secure" => false // for http connections
-//     "users" => [
-//         "rohitjoshi" => "@koolrj1",
-//     ]
-// ]));
 
 //my api call 
-//end point createuser
-//parameter email, passowrd
-//post method for inserting into database
+//end point 'createuser'
+//parameter email, password, age
+//post method is used for inserting into database
 
 $app->post('/createuser',function(Request $request, Response $response){
 
-    if(!haveEmptyParam(array('email', 'password'),$request,$response)){   
-
+    if(!haveEmptyParam(array('email', 'password','age'),$request,$response)){   
        $request_data = $request->getParsedBody(); 
        $email = $request_data['email'];
        $password  =$request_data['password'];
+	   $age = $request_data['age'];
 
        $db = new DbOperations;
 
        $hash_passowrd =  password_hash($password,PASSWORD_DEFAULT);
-       $result = $db->createUser($email,$hash_passowrd);
+       $result = $db->createUser($email,$hash_passowrd,$age);
        
        if($result == USER_CREATED){
 
@@ -52,7 +46,7 @@ $app->post('/createuser',function(Request $request, Response $response){
        }else if( $result == USER_FAILURE){
            
         $message['error']= true;
-        $message['message']= 'Error';
+        $message['message']= 'Error while creating user, please try again later';
 
         $response->write(json_encode($message));
 
@@ -60,10 +54,10 @@ $app->post('/createuser',function(Request $request, Response $response){
          ->withHeader('Content-type','application/json')
          ->withStatus(422);
 
-       }else if($result ==  USER_EXIST){
+       }else if($result ==  USER_EXISTS){
 
         $message['error']= true;
-        $message['message']= 'Error';
+        $message['message']= 'User already exist';
 
         $response->write(json_encode($message));
 
@@ -74,7 +68,7 @@ $app->post('/createuser',function(Request $request, Response $response){
 
        
        $message['error']= true;
-       $message['message']= 'Error';
+       $message['message']= 'Some error occurred';
 
        $response->write(json_encode($message));
 
@@ -85,6 +79,10 @@ $app->post('/createuser',function(Request $request, Response $response){
 
 });
 
+//end point 'userlogin'
+//parameter email, password
+//post method is used for inserting into database 
+
 $app->post('/userlogin',function(Request $request, Response $response){
     
     if(!haveEmptyParam(array('email','password'),$request,$response)){
@@ -93,7 +91,6 @@ $app->post('/userlogin',function(Request $request, Response $response){
         $password  =$request_data['password'];
  
         $db = new DbOperations;
-
         $result = $db->userLogin($email,$password);
 
         if($result==USER_AUTHENTICATED){
@@ -138,25 +135,32 @@ $app->post('/userlogin',function(Request $request, Response $response){
     ->withStatus(422);
 });
 
+//my api call 
+//end point 'allusers'
+//parameter none
+//get method is used for retrieving data
 
 $app->get('/allusers',function(Request $request,Response $response){
 
     $db = new DbOperations;
-
     $users = $db->getAllUsers();
-
     $response_data ['error'] = false;
     $response_data ['users'] = $users;
 
     $response->write(json_encode($response_data));
-    
+
     return $response
     ->withHeader('Content-type','application/json')
     ->withStatus(200);
 
 });
 
-$app->put('/updateinfo',function(Request $request, Response $response){
+//my api call 
+//end point 'updatepassword'
+//parameter email, password, age
+//put method is used for updating data into database
+
+$app->put('/updatepassword',function(Request $request, Response $response){
 
     if(!haveEmptyParam(array('email','password','new_password'),$request,$response)){
         $request_data = $request->getParsedBody(); 
@@ -170,7 +174,7 @@ $app->put('/updateinfo',function(Request $request, Response $response){
 
             if($result == INFO_UPDATE_SUCCESS){
                 $response_data['error'] = false;
-                $response_data['message'] = 'Info updated successfully';
+                $response_data['message'] = 'Password updated successfully';
                 
                 $response->write(json_encode($response_data));
 
@@ -181,7 +185,7 @@ $app->put('/updateinfo',function(Request $request, Response $response){
 
             }else if ($result == INFO_UPDATE_FAIL){
                 $response_data['error'] = true;
-                $response_data['message'] = 'Info updation failed';
+                $response_data['message'] = 'Password updation failed';
                 
                 $response->write(json_encode($response_data));
 
@@ -208,15 +212,21 @@ $app->put('/updateinfo',function(Request $request, Response $response){
                 ->withStatus(422);
             }
 
+			    return $response
+                ->withHeader('Content-type','application/json')
+                ->withStatus(422);
+            
         }
-
-    
-
     return $response
     ->withHeader('Content-type','application/json')
     ->withStatus(422);
 
 });
+
+//my api call 
+//end point 'deleteuser'
+//parameter email, password, age
+//delete method is used for deleting data into database
 
 $app->delete('/deleteuser',function(Request $request, Response $response){
 
